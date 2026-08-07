@@ -1,0 +1,9 @@
+{
+  "name": "nth-market-data",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "generate": "node scripts/generate-market-catalog.mjs",
+    "validate": "node scripts/validate-market-catalog.mjs"
+  }
+}

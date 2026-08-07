@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-07T11:59:37.535Z",
+  "catalog": {
+    "file": "market-router-index.json",
+    "sha256": "ba405357855cc2dd9802237ab8b597a367ef8d6b89ab815ac3a6a4a4f1e9e1ae",
+    "bytes": 3754776,
+    "totalItems": 46243,
+    "coverage": {
+      "buff163GoodsId": 41541,
+      "buffMarketGoodsId": 41360,
+      "youpinGoodsId": 39523,
+      "defIndex": 45199,
+      "paintIndex": 21474
+    }
+  },
+  "sources": {
+    "byMykel": {
+      "url": "https://raw.githubusercontent.com/ByMykel/CSGO-API/main/public/api/en/all.json",
+      "repository": "https://github.com/ByMykel/CSGO-API",
+      "license": "MIT",
+      "etag": "W/\"c84eae12bf26a0aa2dfb59f547b1f62134e9915f9f75c1edfd5e3ccda0f176c3\"",
+      "lastModified": null
+    },
+    "marketplaceIds": {
+      "url": "https://raw.githubusercontent.com/ModestSerhat/cs2-marketplace-ids/main/cs2_marketplaceids.json",
+      "repository": "https://github.com/ModestSerhat/cs2-marketplace-ids",
+      "license": "No license file declared upstream",
+      "etag": "W/\"8eead95f3bd8c3a0ab0224283a4e7ea7d6a46f30f79b588eec7b38c8db4f3d17\"",
+      "lastModified": null
+    },
+    "ericZhuBuff": {
+      "url": "https://raw.githubusercontent.com/EricZhu-42/SteamTradingSite-ID-Mapper/main/buff/730.json",
+      "repository": "https://github.com/EricZhu-42/SteamTradingSite-ID-Mapper",
+      "license": "CC-BY-4.0",
+      "etag": "W/\"03ac93687407bc800c9e3b57f50335ee80e1d0f89d753b306d2158cde02b8bc3\"",
+      "lastModified": null
+    },
+    "ericZhuYouPin": {
+      "url": "https://raw.githubusercontent.com/EricZhu-42/SteamTradingSite-ID-Mapper/main/uuyp/730.json",
+      "repository": "https://github.com/EricZhu-42/SteamTradingSite-ID-Mapper",
+      "license": "CC-BY-4.0",
+      "etag": "W/\"b7cac3c5adcff66c266215fdc510d0321c36007100a9c33eb7c07e6f00c5f5ec\"",
+      "lastModified": null
+    }
+  }
+}

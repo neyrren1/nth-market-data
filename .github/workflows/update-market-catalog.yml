@@ -1,0 +1,45 @@
+name: Update market catalog
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 4 * * 0'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-market-catalog
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Generate catalog
+        run: npm run generate
+
+      - name: Validate catalog
+        run: npm run validate
+
+      - name: Commit changed catalog
+        shell: bash
+        run: |
+          git add catalog/market-router-index.json catalog/market-router-index.meta.json
+          if git diff --cached --quiet; then
+            echo "Catalog is already current."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Update market catalog"
+          git push
