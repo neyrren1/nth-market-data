@@ -8,6 +8,7 @@ The catalog is generated from public upstream datasets. It contains inert data o
 
 - `catalog/market-router-index.json`: compact runtime catalog.
 - `catalog/market-router-index.meta.json`: generation time, coverage, source URLs and SHA-256.
+- `data/doppler-images.json`: curated phase-specific Doppler images.
 - `scripts/generate-market-catalog.mjs`: deterministic source merger and Doppler phase expansion.
 - `scripts/validate-market-catalog.mjs`: schema, coverage and integrity checks.
 
@@ -24,24 +25,30 @@ Each item is keyed by its exact Steam `market_hash_name`. Values use the column 
 ```json
 {
   "schemaVersion": 1,
-  "columns": ["buff163GoodsId", "buffMarketGoodsId", "youpinGoodsId", "defIndex", "paintIndex"],
+  "columns": ["buff163GoodsId", "buffMarketGoodsId", "youpinGoodsId", "defIndex", "paintIndex", "image"],
   "items": {
-    "AK-47 | Redline (Field-Tested)": ["...", "...", "...", "7", "282"]
+    "AK-47 | Redline (Field-Tested)": ["...", "...", "...", "7", "282", "https://..."]
   }
 }
 ```
 
-Missing values are `null`. The remote data never contains executable code or URL templates.
+Missing values are `null`. Images must use HTTPS and one of the explicitly allowed Steam/GitHub image hosts. Phase-specific BUFF163 and BUFF Market IDs are never replaced by a generic Doppler ID; unavailable phase IDs remain `null`. The remote data never contains executable code or marketplace URL templates.
 
 ## Updating
 
-The `Update market catalog` workflow runs every Sunday and can also be started manually from the Actions tab. It downloads each source over HTTPS, merges exact names, expands Doppler phase identifiers, validates minimum coverage and commits only when the resulting catalog changes.
+The `Update market catalog` workflow runs every Sunday and can also be started manually from the Actions tab. It downloads each source over HTTPS, merges exact names, expands Doppler phase identifiers and phase images, validates minimum coverage and commits only when the resulting catalog changes. Doppler generation fails rather than publishing a phase without its curated image.
 
 Local commands require Node.js 22 or newer:
 
 ```bash
 npm run generate
 npm run validate
+```
+
+Maintainers can refresh the checked-in TradeBook Doppler image overrides before generation:
+
+```bash
+npm run import:doppler-images -- /path/to/dopplers.json
 ```
 
 ## Sources And Attribution

@@ -19,3 +19,7 @@ https://creativecommons.org/licenses/by/4.0/
 Created by ModestSerhat. The upstream repository does not currently contain a license file. Its provenance is recorded here and in each generated metadata file.
 
 https://github.com/ModestSerhat/cs2-marketplace-ids
+
+## Doppler Image Overrides
+
+The phase-specific Doppler image mapping is maintained by NTH and was curated for TradeBook. Image assets are served by Valve's Steam CDN; inclusion of an image URL does not transfer ownership of the referenced asset.

@@ -3,7 +3,8 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 
 const outputPath = new URL('../catalog/market-router-index.json', import.meta.url);
 const metadataPath = new URL('../catalog/market-router-index.meta.json', import.meta.url);
-const columns = ['buff163GoodsId', 'buffMarketGoodsId', 'youpinGoodsId', 'defIndex', 'paintIndex'];
+const columns = ['buff163GoodsId', 'buffMarketGoodsId', 'youpinGoodsId', 'defIndex', 'paintIndex', 'image'];
+const allowedImageHosts = new Set(['community.akamai.steamstatic.com', 'cdn.steamstatic.com', 'raw.githubusercontent.com']);
 const sourceDefinitions = {
   byMykel: {
     url: 'https://raw.githubusercontent.com/ByMykel/CSGO-API/main/public/api/en/all.json',
@@ -27,15 +28,18 @@ const sourceDefinitions = {
   }
 };
 
-const phasePaintIndexes = {
-  Doppler: {
+const legacyDopplerPaintIndexes = {
     Ruby: '415', Sapphire: '416', 'Black Pearl': '417',
     'Phase 1': '418', 'Phase 2': '419', 'Phase 3': '420', 'Phase 4': '421'
-  },
-  'Gamma Doppler': {
-    Emerald: '568', 'Phase 1': '569', 'Phase 2': '570', 'Phase 3': '571', 'Phase 4': '572'
-  }
 };
+const chromaDopplerPaintIndexes = {
+  Ruby: '415', Sapphire: '619', 'Black Pearl': '617',
+  'Phase 1': '418', 'Phase 2': '618', 'Phase 3': '420', 'Phase 4': '421'
+};
+const gammaDopplerPaintIndexes = {
+    Emerald: '568', 'Phase 1': '569', 'Phase 2': '570', 'Phase 3': '571', 'Phase 4': '572'
+};
+const chromaDopplerWeapons = new Set(['★ Butterfly Knife', '★ Shadow Daggers']);
 
 const weaponDefIndexes = {
   'Desert Eagle': '1', 'Dual Berettas': '2', 'Five-SeveN': '3', 'Glock-18': '4', 'AK-47': '7', AUG: '8', AWP: '9',
@@ -44,6 +48,9 @@ const weaponDefIndexes = {
   P2000: '32', MP7: '33', MP9: '34', Nova: '35', P250: '36', 'SCAR-20': '38', 'SG 553': '39', 'SSG 08': '40',
   'M4A1-S': '60', 'USP-S': '61', 'CZ75-Auto': '63', 'R8 Revolver': '64'
 };
+
+const dopplerImages = JSON.parse(await readFile(new URL('../data/doppler-images.json', import.meta.url), 'utf8'));
+if (!dopplerImages || typeof dopplerImages !== 'object' || Array.isArray(dopplerImages)) throw new Error('Doppler image overrides have an unexpected schema');
 
 const fetchedSources = await Promise.all(Object.entries(sourceDefinitions).map(async ([key, definition]) => {
   const result = await fetchJson(definition.url);
@@ -63,6 +70,7 @@ for (const item of Object.values(byMykelItems)) {
   const record = getRecord(items, name);
   record[3] ??= toIntegerString(item.def_index ?? item.weapon?.weapon_id);
   record[4] ??= toIntegerString(item.paint_index, true);
+  record[5] ??= normalizeImage(item.image);
 }
 
 const marketplaceData = sources.marketplaceIds.data;
@@ -159,7 +167,7 @@ function normalizeName(value) {
 function getRecord(records, name) {
   let record = records.get(name);
   if (!record) {
-    record = [null, null, null, null, null];
+    record = [null, null, null, null, null, null];
     records.set(name, record);
   }
   return record;
@@ -194,27 +202,47 @@ function expandDopplerPhases(records, marketplaceItems) {
     const genericRecord = getRecord(records, name);
 
     for (const phase of phaseNames) {
-      const paintIndex = phasePaintIndexes[finishType]?.[phase];
-      if (!paintIndex) continue;
       const phaseName = `${finishName} ${phase} (${exterior})`;
+      const paintIndex = getDopplerPaintIndex(finishType, phase, phaseName);
+      if (!paintIndex) continue;
+      const phaseImage = normalizeImage(dopplerImages[phaseName]);
+      if (!phaseImage) throw new Error(`Missing curated Doppler image: ${phaseName}`);
       const record = getRecord(records, phaseName);
       record[0] = toIntegerString(buffPhases[phase]) ?? record[0];
       record[1] = toIntegerString(buffMarketPhases[phase]) ?? record[1];
       record[2] ??= genericRecord[2];
       record[3] ??= genericRecord[3] ?? inferWeaponDefIndex(phaseName);
       record[4] = paintIndex;
+      record[5] = phaseImage;
     }
   }
 }
 
+function getDopplerPaintIndex(finishType, phase, marketHashName) {
+  if (finishType === 'Gamma Doppler') return gammaDopplerPaintIndexes[phase] ?? null;
+  const weaponName = marketHashName.split(' | ')[0].replace(/^★ StatTrak™\s+/, '★ ');
+  const paintIndexes = chromaDopplerWeapons.has(weaponName) ? chromaDopplerPaintIndexes : legacyDopplerPaintIndexes;
+  return paintIndexes[phase] ?? null;
+}
+
 function inferWeaponDefIndex(marketHashName) {
   const weaponName = marketHashName
+    .replace(/^★\s+/, '')
     .replace(/^StatTrak™\s+/, '')
     .replace(/^Souvenir\s+/, '')
-    .replace(/^★\s+/, '')
     .split(' | ')[0]
     .trim();
   return weaponDefIndexes[weaponName] ?? null;
+}
+
+function normalizeImage(value) {
+  if (typeof value !== 'string' || !value.trim()) return null;
+  try {
+    const url = new URL(value.trim());
+    return url.protocol === 'https:' && allowedImageHosts.has(url.hostname) ? url.href : null;
+  } catch {
+    return null;
+  }
 }
 
 function validateCatalog(value) {
@@ -224,12 +252,35 @@ function validateCatalog(value) {
   for (const [name, record] of entries) {
     if (!normalizeName(name) || !Array.isArray(record) || record.length !== columns.length) throw new Error(`Invalid record: ${name}`);
     record.forEach((field, index) => {
-      if (field !== null && !/^\d+$/.test(field)) throw new Error(`Invalid ${columns[index]} for ${name}`);
+      if (index === 5 && field !== null && normalizeImage(field) !== field) throw new Error(`Invalid image for ${name}`);
+      if (index !== 5 && field !== null && !/^\d+$/.test(field)) throw new Error(`Invalid ${columns[index]} for ${name}`);
       if (field !== null) coverage[index] += 1;
     });
   }
-  const minimumCoverage = [30_000, 30_000, 30_000, 40_000, 18_000];
+  const minimumCoverage = [30_000, 30_000, 30_000, 40_000, 18_000, 43_000];
   coverage.forEach((count, index) => {
     if (count < minimumCoverage[index]) throw new Error(`${columns[index]} coverage is too low (${count})`);
   });
+  validateDopplerCoverage(entries);
+}
+
+function validateDopplerCoverage(entries) {
+  const phases = entries.filter(([name]) => /\| (?:Gamma )?Doppler (?:Phase [1-4]|Ruby|Sapphire|Black Pearl|Emerald) \(/.test(name));
+  if (phases.length < 700) throw new Error(`Doppler phase coverage is too low (${phases.length})`);
+  if (phases.filter(([, record]) => record[0] !== null).length < 700) throw new Error('BUFF163 Doppler phase coverage is too low');
+  if (phases.filter(([, record]) => record[1] !== null).length < 650) throw new Error('BUFF Market Doppler phase coverage is too low');
+  for (const [name, record] of phases) {
+    if (record[3] === null || record[4] === null || record[5] === null) throw new Error(`Incomplete Doppler phase record: ${name}`);
+  }
+  const expectedPaintIndexes = {
+    '★ Butterfly Knife | Doppler Phase 2 (Factory New)': '618',
+    '★ Butterfly Knife | Doppler Sapphire (Factory New)': '619',
+    '★ Butterfly Knife | Doppler Black Pearl (Factory New)': '617',
+    '★ Bayonet | Doppler Phase 2 (Factory New)': '419',
+    'Glock-18 | Gamma Doppler Emerald (Factory New)': '568'
+  };
+  const records = new Map(entries);
+  for (const [name, paintIndex] of Object.entries(expectedPaintIndexes)) {
+    if (records.get(name)?.[4] !== paintIndex) throw new Error(`Incorrect Doppler paint index: ${name}`);
+  }
 }

@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "generate": "node scripts/generate-market-catalog.mjs",
-    "validate": "node scripts/validate-market-catalog.mjs"
+    "validate": "node scripts/validate-market-catalog.mjs",
+    "import:doppler-images": "node scripts/import-doppler-images.mjs"
   }
 }

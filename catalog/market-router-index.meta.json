@@ -1,17 +1,18 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-08-07T11:59:37.535Z",
+  "generatedAt": "2026-08-07T12:18:17.236Z",
   "catalog": {
     "file": "market-router-index.json",
-    "sha256": "ba405357855cc2dd9802237ab8b597a367ef8d6b89ab815ac3a6a4a4f1e9e1ae",
-    "bytes": 3754776,
+    "sha256": "c3fe869fd0877f03337e06eaa32122c644022d65e013ece06c91b45ade12483a",
+    "bytes": 14563452,
     "totalItems": 46243,
     "coverage": {
       "buff163GoodsId": 41541,
       "buffMarketGoodsId": 41360,
       "youpinGoodsId": 39523,
       "defIndex": 45199,
-      "paintIndex": 21474
+      "paintIndex": 21474,
+      "image": 45199
     }
   },
   "sources": {
