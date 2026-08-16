@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-08-09T05:19:50.948Z",
+  "generatedAt": "2026-08-16T04:51:35.506Z",
   "catalog": {
     "file": "market-router-index.json",
-    "sha256": "34d7bf60abcda70b3a044d124291469c50c87ed2cc319150da68f366e3e7bc89",
-    "bytes": 14572372,
+    "sha256": "1faa475d6d9be6affc12e53c69f1568018e37032e1047b6359347d09632049b1",
+    "bytes": 14594307,
     "totalItems": 46243,
     "coverage": {
       "buff163GoodsId": 41633,
@@ -20,7 +20,7 @@
       "url": "https://raw.githubusercontent.com/ByMykel/CSGO-API/main/public/api/en/all.json",
       "repository": "https://github.com/ByMykel/CSGO-API",
       "license": "MIT",
-      "etag": "W/\"e5fbe7f8866a6172e74542c90b64d4e91f12632f1360ec6c9eff0cc338ea24ad\"",
+      "etag": "W/\"d4a8e142077c2ad35748619e4011a941d9da6923ff2bab44c560607562e94c58\"",
       "lastModified": null
     },
     "marketplaceIds": {
