@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-08-23T04:53:39.130Z",
+  "generatedAt": "2026-08-30T09:57:54.806Z",
   "catalog": {
     "file": "market-router-index.json",
-    "sha256": "8719e9f39de8906cafa714a9fb7afc125c2dfa61b4b25607182e5820fea37ab3",
-    "bytes": 14606034,
+    "sha256": "b5ffdb9995eb14d2f5021c4a76da0034962229f2fcda0dc5092d58987d589b98",
+    "bytes": 14611066,
     "totalItems": 46243,
     "coverage": {
-      "buff163GoodsId": 41694,
-      "buffMarketGoodsId": 41521,
-      "youpinGoodsId": 40098,
+      "buff163GoodsId": 41842,
+      "buffMarketGoodsId": 41668,
+      "youpinGoodsId": 40172,
       "defIndex": 45199,
       "paintIndex": 21474,
       "image": 45199
@@ -20,14 +20,14 @@
       "url": "https://raw.githubusercontent.com/ByMykel/CSGO-API/main/public/api/en/all.json",
       "repository": "https://github.com/ByMykel/CSGO-API",
       "license": "MIT",
-      "etag": "W/\"1246f5b9a9251c79d31dd9eefc57f99cfbd39f8e0dd7240b26b7123a5975e5cc\"",
+      "etag": "W/\"b63502654d676116b599d758f330b402669f50a905454b6c7e635f507e0d2ff9\"",
       "lastModified": null
     },
     "marketplaceIds": {
       "url": "https://raw.githubusercontent.com/ModestSerhat/cs2-marketplace-ids/main/cs2_marketplaceids.json",
       "repository": "https://github.com/ModestSerhat/cs2-marketplace-ids",
       "license": "No license file declared upstream",
-      "etag": "W/\"de22e740853574e1c4aa64c12b3337e70bc518e4d932a25dae1a2f5c3ec38fac\"",
+      "etag": "W/\"8fa4a502e702d56fc625053e4bf0764639d10075925a9ca6a33ce8bc2c4688a6\"",
       "lastModified": null
     },
     "ericZhuBuff": {
