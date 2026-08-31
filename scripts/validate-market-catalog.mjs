@@ -9,9 +9,10 @@ const columns = ['buff163GoodsId', 'buffMarketGoodsId', 'youpinGoodsId', 'defInd
 const allowedImageHosts = new Set(['community.akamai.steamstatic.com', 'cdn.steamstatic.com', 'raw.githubusercontent.com']);
 const coverage = Array(columns.length).fill(0);
 
-if (catalog.schemaVersion !== 1 || metadata.schemaVersion !== 1) throw new Error('Unsupported schema version');
+if (catalog.schemaVersion !== 2 || metadata.schemaVersion !== 2) throw new Error('Unsupported schema version');
 if (JSON.stringify(catalog.columns) !== JSON.stringify(columns)) throw new Error('Unexpected catalog columns');
 if (entries.length < 40_000) throw new Error(`Catalog is incomplete (${entries.length} items)`);
+if (!catalog.aliases || typeof catalog.aliases !== 'object' || Array.isArray(catalog.aliases)) throw new Error('Unexpected catalog aliases');
 
 let previousName = '';
 for (const [name, record] of entries) {
@@ -23,13 +24,30 @@ for (const [name, record] of entries) {
     if (index !== 5 && field !== null && (typeof field !== 'string' || !/^\d+$/.test(field))) throw new Error(`Invalid ${columns[index]} for ${name}`);
     if (field !== null) coverage[index] += 1;
   });
+  const aliases = catalog.aliases[name];
+  if (aliases !== undefined) {
+    if (!Array.isArray(aliases) || aliases.length > 8) throw new Error(`Invalid aliases for ${name}`);
+    const seenAliases = new Set();
+    for (const alias of aliases) {
+      if (typeof alias !== 'string' || !alias.trim() || alias.trim() !== alias || alias.startsWith('#') || alias.length > 512 || seenAliases.has(alias)) {
+        throw new Error(`Invalid alias for ${name}`);
+      }
+      seenAliases.add(alias);
+    }
+  }
   previousName = name;
+}
+
+for (const name of Object.keys(catalog.aliases)) {
+  if (!catalog.items[name]) throw new Error(`Alias references unknown item: ${name}`);
 }
 
 const sha256 = createHash('sha256').update(catalogText).digest('hex');
 if (metadata.catalog.sha256 !== sha256) throw new Error('Catalog SHA-256 does not match metadata');
 if (metadata.catalog.bytes !== Buffer.byteLength(catalogText)) throw new Error('Catalog byte size does not match metadata');
 if (metadata.catalog.totalItems !== entries.length) throw new Error('Catalog item count does not match metadata');
+const totalAliases = Object.values(catalog.aliases).reduce((total, aliases) => total + aliases.length, 0);
+if (!metadata.catalog.aliases || metadata.catalog.aliases.localizedItems !== Object.keys(catalog.aliases).length || metadata.catalog.aliases.totalAliases !== totalAliases) throw new Error('Catalog alias metadata does not match');
 
 columns.forEach((column, index) => {
   if (metadata.catalog.coverage[column] !== coverage[index]) throw new Error(`${column} coverage does not match metadata`);

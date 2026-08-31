@@ -20,14 +20,17 @@ https://raw.githubusercontent.com/neyrren1/nth-market-data/main/catalog/market-r
 
 ## Catalog Schema
 
-Each item is keyed by its exact Steam `market_hash_name`. Values use the column order declared at the top of the catalog:
+Each item is keyed by its exact Steam `market_hash_name`. Values use the column order declared at the top of the catalog. Optional localized aliases are stored separately and are used only for local search; marketplace URLs and price requests still use the English key.
 
 ```json
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "columns": ["buff163GoodsId", "buffMarketGoodsId", "youpinGoodsId", "defIndex", "paintIndex", "image"],
   "items": {
     "AK-47 | Redline (Field-Tested)": ["...", "...", "...", "7", "282", "https://..."]
+  },
+  "aliases": {
+    "AK-47 | Redline (Field-Tested)": ["AK-47 | Красная линия (После полевых испытаний)", "AK-47 | 红线 (久经沙场)"]
   }
 }
 ```

@@ -11,6 +11,20 @@ const sourceDefinitions = {
     repository: 'https://github.com/ByMykel/CSGO-API',
     license: 'MIT'
   },
+  byMykelRu: {
+    url: 'https://raw.githubusercontent.com/ByMykel/CSGO-API/main/public/api/ru/all.json',
+    repository: 'https://github.com/ByMykel/CSGO-API',
+    license: 'MIT',
+    fallbackPath: new URL('../data/by-mykel-ru-aliases.json', import.meta.url),
+    fallbackLabel: 'data/by-mykel-ru-aliases.json',
+    optional: true
+  },
+  byMykelZhCn: {
+    url: 'https://raw.githubusercontent.com/ByMykel/CSGO-API/main/public/api/zh-CN/all.json',
+    repository: 'https://github.com/ByMykel/CSGO-API',
+    license: 'MIT',
+    optional: true
+  },
   marketplaceIds: {
     url: 'https://raw.githubusercontent.com/ModestSerhat/cs2-marketplace-ids/main/cs2_marketplaceids.json',
     repository: 'https://github.com/ModestSerhat/cs2-marketplace-ids',
@@ -53,11 +67,19 @@ const dopplerImages = JSON.parse(await readFile(new URL('../data/doppler-images.
 if (!dopplerImages || typeof dopplerImages !== 'object' || Array.isArray(dopplerImages)) throw new Error('Doppler image overrides have an unexpected schema');
 
 const fetchedSources = await Promise.all(Object.entries(sourceDefinitions).map(async ([key, definition]) => {
-  const result = await fetchJson(definition.url);
-  return [key, { ...definition, ...result }];
+  try {
+    const result = await fetchJson(definition.url);
+    return [key, { ...definition, ...result }];
+  } catch (error) {
+    if (!definition.optional) throw error;
+    const fallback = await readFallbackJson(definition);
+    if (fallback) return [key, { ...definition, ...fallback, unavailable: String(error?.message || error).slice(0, 300) }];
+    return [key, { ...definition, data: null, etag: null, lastModified: null, unavailable: String(error?.message || error).slice(0, 300) }];
+  }
 }));
 const sources = Object.fromEntries(fetchedSources);
 const items = new Map();
+const aliases = new Map();
 
 const byMykelItems = sources.byMykel.data;
 if (!byMykelItems || typeof byMykelItems !== 'object' || Array.isArray(byMykelItems)) {
@@ -72,6 +94,9 @@ for (const item of Object.values(byMykelItems)) {
   record[4] ??= toIntegerString(item.paint_index, true);
   record[5] ??= normalizeImage(item.image);
 }
+
+mergeLocalizedAliases(aliases, sources.byMykelRu.data);
+mergeLocalizedAliases(aliases, sources.byMykelZhCn.data);
 
 const marketplaceData = sources.marketplaceIds.data;
 if (!marketplaceData?.items || typeof marketplaceData.items !== 'object' || Array.isArray(marketplaceData.items)) {
@@ -93,12 +118,17 @@ mergeSimpleIdMap(items, sources.ericZhuYouPin.data, 2);
 expandDopplerPhases(items, marketplaceData.items);
 
 const sortedItems = {};
+const sortedAliases = {};
 for (const name of [...items.keys()].sort((first, second) => first.localeCompare(second, 'en', { sensitivity: 'base' }))) {
   const record = items.get(name);
-  if (record.some((value) => value !== null)) sortedItems[name] = record;
+  if (record.some((value) => value !== null)) {
+    sortedItems[name] = record;
+    const itemAliases = aliases.get(name)?.filter((alias) => alias !== name) || [];
+    if (itemAliases.length) sortedAliases[name] = itemAliases;
+  }
 }
 
-const catalog = { schemaVersion: 1, columns, items: sortedItems };
+const catalog = { schemaVersion: 2, columns, items: sortedItems, aliases: sortedAliases };
 validateCatalog(catalog);
 const catalogJson = JSON.stringify(catalog);
 const sha256 = createHash('sha256').update(catalogJson).digest('hex');
@@ -111,21 +141,27 @@ if (existingCatalog === catalogJson) {
 
 const coverage = Object.fromEntries(columns.map((column, index) => [column, Object.values(sortedItems).filter((record) => record[index] !== null).length]));
 const metadata = {
-  schemaVersion: 1,
+  schemaVersion: 2,
   generatedAt: new Date().toISOString(),
   catalog: {
     file: 'market-router-index.json',
     sha256,
     bytes: Buffer.byteLength(catalogJson),
     totalItems: Object.keys(sortedItems).length,
-    coverage
+    coverage,
+    aliases: {
+      localizedItems: Object.keys(sortedAliases).length,
+      totalAliases: Object.values(sortedAliases).reduce((total, values) => total + values.length, 0)
+    }
   },
   sources: Object.fromEntries(Object.entries(sources).map(([key, source]) => [key, {
     url: source.url,
     repository: source.repository,
     license: source.license,
     etag: source.etag,
-    lastModified: source.lastModified
+    lastModified: source.lastModified,
+    fallback: source.fallback,
+    unavailable: source.unavailable
   }]))
 };
 
@@ -158,6 +194,20 @@ async function fetchJson(url) {
   throw new Error(`Failed to fetch ${url}: ${lastError?.message || lastError}`);
 }
 
+async function readFallbackJson(definition) {
+  if (!definition.fallbackPath) return null;
+  try {
+    return {
+      data: JSON.parse(await readFile(definition.fallbackPath, 'utf8')),
+      etag: null,
+      lastModified: null,
+      fallback: definition.fallbackLabel
+    };
+  } catch {
+    return null;
+  }
+}
+
 function normalizeName(value) {
   if (typeof value !== 'string') return '';
   const name = value.trim();
@@ -187,6 +237,21 @@ function mergeSimpleIdMap(records, source, columnIndex) {
     const id = toIntegerString(rawId);
     if (!name || !id) continue;
     getRecord(records, name)[columnIndex] ??= id;
+  }
+}
+
+function mergeLocalizedAliases(aliasMap, source) {
+  if (source === null) return;
+  if (!source || typeof source !== 'object' || Array.isArray(source)) throw new Error('ByMykel localized source has an unexpected schema');
+  for (const [rawName, item] of Object.entries(source)) {
+    const name = normalizeName(item?.market_hash_name || rawName);
+    const alias = normalizeName(item?.name || item);
+    if (!name || !alias || alias === name) continue;
+    const values = aliasMap.get(name) || [];
+    if (!values.includes(alias)) {
+      values.push(alias);
+      aliasMap.set(name, values);
+    }
   }
 }
 
@@ -247,7 +312,8 @@ function normalizeImage(value) {
 
 function validateCatalog(value) {
   const entries = Object.entries(value.items);
-  if (value.schemaVersion !== 1 || entries.length < 40_000) throw new Error(`Catalog is incomplete (${entries.length} items)`);
+  if (value.schemaVersion !== 2 || entries.length < 40_000) throw new Error(`Catalog is incomplete (${entries.length} items)`);
+  if (!value.aliases || typeof value.aliases !== 'object' || Array.isArray(value.aliases)) throw new Error('Catalog aliases have an unexpected schema');
   const coverage = Array(columns.length).fill(0);
   for (const [name, record] of entries) {
     if (!normalizeName(name) || !Array.isArray(record) || record.length !== columns.length) throw new Error(`Invalid record: ${name}`);
@@ -256,6 +322,18 @@ function validateCatalog(value) {
       if (index !== 5 && field !== null && !/^\d+$/.test(field)) throw new Error(`Invalid ${columns[index]} for ${name}`);
       if (field !== null) coverage[index] += 1;
     });
+    const aliases = value.aliases[name];
+    if (aliases !== undefined) {
+      if (!Array.isArray(aliases) || aliases.length > 8) throw new Error(`Invalid aliases for ${name}`);
+      const seenAliases = new Set();
+      for (const alias of aliases) {
+        if (!normalizeName(alias) || seenAliases.has(alias)) throw new Error(`Invalid alias for ${name}`);
+        seenAliases.add(alias);
+      }
+    }
+  }
+  for (const name of Object.keys(value.aliases)) {
+    if (!value.items[name]) throw new Error(`Alias references unknown item: ${name}`);
   }
   const minimumCoverage = [30_000, 30_000, 30_000, 40_000, 18_000, 43_000];
   coverage.forEach((count, index) => {
