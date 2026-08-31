@@ -1,10 +1,10 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-08-31T15:55:01.040Z",
+  "generatedAt": "2026-08-31T16:03:40.613Z",
   "catalog": {
     "file": "market-router-index.json",
-    "sha256": "5246407d9bad57d959ddc5d7efd27bc5e6b37982986d89ebdb4fb26b706bb0cb",
-    "bytes": 22254669,
+    "sha256": "66694eb9073b98f7c7604f0e9c9c8a753bafd75d0725dce9eca1a1b1c9315dca",
+    "bytes": 22253358,
     "totalItems": 46243,
     "coverage": {
       "buff163GoodsId": 41857,
@@ -16,7 +16,7 @@
     },
     "aliases": {
       "localizedItems": 44460,
-      "totalAliases": 88920
+      "totalAliases": 88903
     },
     "buff163TagIds": {
       "totalItems": 724

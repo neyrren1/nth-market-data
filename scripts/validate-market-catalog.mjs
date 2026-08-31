@@ -17,7 +17,7 @@ if (!catalog.buff163TagIds || typeof catalog.buff163TagIds !== 'object' || Array
 
 let previousName = '';
 for (const [name, record] of entries) {
-  if (!name || name.trim() !== name || name.startsWith('#') || name.length > 512) throw new Error(`Invalid market hash name: ${name}`);
+  if (!name || name.trim() !== name || name.startsWith('#') || name.length > 512 || /[\u0000-\u001f\u007f]/.test(name)) throw new Error(`Invalid market hash name: ${name}`);
   if (previousName && previousName.localeCompare(name, 'en', { sensitivity: 'base' }) > 0) throw new Error(`Catalog is not sorted near ${name}`);
   if (!Array.isArray(record) || record.length !== columns.length) throw new Error(`Invalid record: ${name}`);
   record.forEach((field, index) => {
@@ -30,7 +30,7 @@ for (const [name, record] of entries) {
     if (!Array.isArray(aliases) || aliases.length > 8) throw new Error(`Invalid aliases for ${name}`);
     const seenAliases = new Set();
     for (const alias of aliases) {
-      if (typeof alias !== 'string' || !alias.trim() || alias.trim() !== alias || alias.startsWith('#') || alias.length > 512 || seenAliases.has(alias)) {
+      if (typeof alias !== 'string' || !alias.trim() || alias.trim() !== alias || alias.startsWith('#') || alias.length > 512 || /[\u0000-\u001f\u007f]/.test(alias) || seenAliases.has(alias)) {
         throw new Error(`Invalid alias for ${name}`);
       }
       seenAliases.add(alias);

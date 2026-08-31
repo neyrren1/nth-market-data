@@ -218,7 +218,7 @@ async function readFallbackJson(definition) {
 function normalizeName(value) {
   if (typeof value !== 'string') return '';
   const name = value.trim();
-  return name && !name.startsWith('#') && name.length <= 512 ? name : '';
+  return name && !name.startsWith('#') && name.length <= 512 && !/[\u0000-\u001f\u007f]/.test(name) ? name : '';
 }
 
 function getRecord(records, name) {
