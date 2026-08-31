@@ -80,6 +80,7 @@ const fetchedSources = await Promise.all(Object.entries(sourceDefinitions).map(a
 const sources = Object.fromEntries(fetchedSources);
 const items = new Map();
 const aliases = new Map();
+const buff163TagIds = new Map();
 
 const byMykelItems = sources.byMykel.data;
 if (!byMykelItems || typeof byMykelItems !== 'object' || Array.isArray(byMykelItems)) {
@@ -115,20 +116,23 @@ for (const [rawName, identifiers] of Object.entries(marketplaceData.items)) {
 
 mergeSimpleIdMap(items, sources.ericZhuBuff.data, 0);
 mergeSimpleIdMap(items, sources.ericZhuYouPin.data, 2);
-expandDopplerPhases(items, marketplaceData.items);
+expandDopplerPhases(items, marketplaceData.items, buff163TagIds);
 
 const sortedItems = {};
 const sortedAliases = {};
+const sortedBuff163TagIds = {};
 for (const name of [...items.keys()].sort((first, second) => first.localeCompare(second, 'en', { sensitivity: 'base' }))) {
   const record = items.get(name);
   if (record.some((value) => value !== null)) {
     sortedItems[name] = record;
     const itemAliases = aliases.get(name)?.filter((alias) => alias !== name) || [];
     if (itemAliases.length) sortedAliases[name] = itemAliases;
+    const buff163TagId = buff163TagIds.get(name);
+    if (buff163TagId) sortedBuff163TagIds[name] = buff163TagId;
   }
 }
 
-const catalog = { schemaVersion: 2, columns, items: sortedItems, aliases: sortedAliases };
+const catalog = { schemaVersion: 2, columns, items: sortedItems, aliases: sortedAliases, buff163TagIds: sortedBuff163TagIds };
 validateCatalog(catalog);
 const catalogJson = JSON.stringify(catalog);
 const sha256 = createHash('sha256').update(catalogJson).digest('hex');
@@ -152,6 +156,9 @@ const metadata = {
     aliases: {
       localizedItems: Object.keys(sortedAliases).length,
       totalAliases: Object.values(sortedAliases).reduce((total, values) => total + values.length, 0)
+    },
+    buff163TagIds: {
+      totalItems: Object.keys(sortedBuff163TagIds).length
     }
   },
   sources: Object.fromEntries(Object.entries(sources).map(([key, source]) => [key, {
@@ -255,7 +262,7 @@ function mergeLocalizedAliases(aliasMap, source) {
   }
 }
 
-function expandDopplerPhases(records, marketplaceItems) {
+function expandDopplerPhases(records, marketplaceItems, buff163TagIds) {
   for (const [rawName, identifiers] of Object.entries(marketplaceItems)) {
     const name = normalizeName(rawName);
     const match = name.match(/^(.* \| ((?:Gamma )?Doppler)) \(([^)]+)\)$/);
@@ -273,7 +280,9 @@ function expandDopplerPhases(records, marketplaceItems) {
       const phaseImage = normalizeImage(dopplerImages[phaseName]);
       if (!phaseImage) throw new Error(`Missing curated Doppler image: ${phaseName}`);
       const record = getRecord(records, phaseName);
-      record[0] = toIntegerString(buffPhases[phase]) ?? record[0];
+      const buff163TagId = toIntegerString(buffPhases[phase]);
+      record[0] ??= genericRecord[0];
+      if (buff163TagId) buff163TagIds.set(phaseName, buff163TagId);
       record[1] = toIntegerString(buffMarketPhases[phase]) ?? record[1];
       record[2] ??= genericRecord[2];
       record[3] ??= genericRecord[3] ?? inferWeaponDefIndex(phaseName);
@@ -314,6 +323,7 @@ function validateCatalog(value) {
   const entries = Object.entries(value.items);
   if (value.schemaVersion !== 2 || entries.length < 40_000) throw new Error(`Catalog is incomplete (${entries.length} items)`);
   if (!value.aliases || typeof value.aliases !== 'object' || Array.isArray(value.aliases)) throw new Error('Catalog aliases have an unexpected schema');
+  if (!value.buff163TagIds || typeof value.buff163TagIds !== 'object' || Array.isArray(value.buff163TagIds)) throw new Error('Catalog BUFF163 tag ids have an unexpected schema');
   const coverage = Array(columns.length).fill(0);
   for (const [name, record] of entries) {
     if (!normalizeName(name) || !Array.isArray(record) || record.length !== columns.length) throw new Error(`Invalid record: ${name}`);
@@ -334,6 +344,9 @@ function validateCatalog(value) {
   }
   for (const name of Object.keys(value.aliases)) {
     if (!value.items[name]) throw new Error(`Alias references unknown item: ${name}`);
+  }
+  for (const [name, tagId] of Object.entries(value.buff163TagIds)) {
+    if (!value.items[name] || !/^\d+$/.test(tagId)) throw new Error(`Invalid BUFF163 tag id for ${name}`);
   }
   const minimumCoverage = [30_000, 30_000, 30_000, 40_000, 18_000, 43_000];
   coverage.forEach((count, index) => {

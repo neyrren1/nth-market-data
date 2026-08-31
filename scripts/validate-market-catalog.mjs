@@ -13,6 +13,7 @@ if (catalog.schemaVersion !== 2 || metadata.schemaVersion !== 2) throw new Error
 if (JSON.stringify(catalog.columns) !== JSON.stringify(columns)) throw new Error('Unexpected catalog columns');
 if (entries.length < 40_000) throw new Error(`Catalog is incomplete (${entries.length} items)`);
 if (!catalog.aliases || typeof catalog.aliases !== 'object' || Array.isArray(catalog.aliases)) throw new Error('Unexpected catalog aliases');
+if (!catalog.buff163TagIds || typeof catalog.buff163TagIds !== 'object' || Array.isArray(catalog.buff163TagIds)) throw new Error('Unexpected BUFF163 tag ids');
 
 let previousName = '';
 for (const [name, record] of entries) {
@@ -42,12 +43,17 @@ for (const name of Object.keys(catalog.aliases)) {
   if (!catalog.items[name]) throw new Error(`Alias references unknown item: ${name}`);
 }
 
+for (const [name, tagId] of Object.entries(catalog.buff163TagIds)) {
+  if (!catalog.items[name] || typeof tagId !== 'string' || !/^\d+$/.test(tagId)) throw new Error(`Invalid BUFF163 tag id for ${name}`);
+}
+
 const sha256 = createHash('sha256').update(catalogText).digest('hex');
 if (metadata.catalog.sha256 !== sha256) throw new Error('Catalog SHA-256 does not match metadata');
 if (metadata.catalog.bytes !== Buffer.byteLength(catalogText)) throw new Error('Catalog byte size does not match metadata');
 if (metadata.catalog.totalItems !== entries.length) throw new Error('Catalog item count does not match metadata');
 const totalAliases = Object.values(catalog.aliases).reduce((total, aliases) => total + aliases.length, 0);
 if (!metadata.catalog.aliases || metadata.catalog.aliases.localizedItems !== Object.keys(catalog.aliases).length || metadata.catalog.aliases.totalAliases !== totalAliases) throw new Error('Catalog alias metadata does not match');
+if (!metadata.catalog.buff163TagIds || metadata.catalog.buff163TagIds.totalItems !== Object.keys(catalog.buff163TagIds).length) throw new Error('Catalog BUFF163 tag id metadata does not match');
 
 columns.forEach((column, index) => {
   if (metadata.catalog.coverage[column] !== coverage[index]) throw new Error(`${column} coverage does not match metadata`);

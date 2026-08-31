@@ -1,13 +1,13 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-08-31T15:41:41.188Z",
+  "generatedAt": "2026-08-31T15:55:01.040Z",
   "catalog": {
     "file": "market-router-index.json",
-    "sha256": "62815c38da79401bcadc2225dda4a83172e20ad452e420cd39409e09d67aacb2",
-    "bytes": 22205878,
+    "sha256": "5246407d9bad57d959ddc5d7efd27bc5e6b37982986d89ebdb4fb26b706bb0cb",
+    "bytes": 22254669,
     "totalItems": 46243,
     "coverage": {
-      "buff163GoodsId": 41842,
+      "buff163GoodsId": 41857,
       "buffMarketGoodsId": 41668,
       "youpinGoodsId": 40172,
       "defIndex": 45199,
@@ -17,6 +17,9 @@
     "aliases": {
       "localizedItems": 44460,
       "totalAliases": 88920
+    },
+    "buff163TagIds": {
+      "totalItems": 724
     }
   },
   "sources": {

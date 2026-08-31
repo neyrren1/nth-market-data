@@ -31,11 +31,14 @@ Each item is keyed by its exact Steam `market_hash_name`. Values use the column 
   },
   "aliases": {
     "AK-47 | Redline (Field-Tested)": ["AK-47 | Красная линия (После полевых испытаний)", "AK-47 | 红线 (久经沙场)"]
+  },
+  "buff163TagIds": {
+    "★ Karambit | Gamma Doppler Phase 4 (Factory New)": "447204"
   }
 }
 ```
 
-Missing values are `null`. Images must use HTTPS and one of the explicitly allowed Steam/GitHub image hosts. Phase-specific BUFF163 and BUFF Market IDs are never replaced by a generic Doppler ID; unavailable phase IDs remain `null`. The remote data never contains executable code or marketplace URL templates.
+Missing values are `null`. Images must use HTTPS and one of the explicitly allowed Steam/GitHub image hosts. BUFF163 Doppler phase identifiers are stored as `buff163TagIds` and should be applied to the generic goods page/API, for example `/goods/43011#tag_ids=447204`. Phase-specific BUFF Market IDs are never replaced by a generic Doppler ID; unavailable phase IDs remain `null`. The remote data never contains executable code or marketplace URL templates.
 
 ## Updating
 
