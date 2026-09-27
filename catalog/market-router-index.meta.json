@@ -1,22 +1,22 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-20T09:18:43.422Z",
+  "generatedAt": "2026-09-27T10:02:00.913Z",
   "catalog": {
     "file": "market-router-index.json",
-    "sha256": "2de493df9e225f6c35e99687b44d7b359a78fafdb86a46d60860fdbda58ec4ff",
-    "bytes": 22261728,
-    "totalItems": 46243,
+    "sha256": "d3de884f53ca2f13920b5d9df3aa5ebeb60755d9fe0ba10c5c834621a2c9a2db",
+    "bytes": 22263282,
+    "totalItems": 46245,
     "coverage": {
-      "buff163GoodsId": 41964,
-      "buffMarketGoodsId": 41775,
-      "youpinGoodsId": 40278,
-      "defIndex": 45199,
+      "buff163GoodsId": 41990,
+      "buffMarketGoodsId": 41801,
+      "youpinGoodsId": 40315,
+      "defIndex": 45201,
       "paintIndex": 21474,
-      "image": 45199
+      "image": 45201
     },
     "aliases": {
-      "localizedItems": 44460,
-      "totalAliases": 88903
+      "localizedItems": 44462,
+      "totalAliases": 88905
     },
     "buff163TagIds": {
       "totalItems": 724
@@ -27,7 +27,7 @@
       "url": "https://raw.githubusercontent.com/ByMykel/CSGO-API/main/public/api/en/all.json",
       "repository": "https://github.com/ByMykel/CSGO-API",
       "license": "MIT",
-      "etag": "W/\"237869070a7dac7dd47c26754e6db398b938459ce5714da273b37be985a97b98\"",
+      "etag": "W/\"547345241ae01bef485b274feaf30365a1f2d216b7eb3ce6d9556ce8b74c2146\"",
       "lastModified": null
     },
     "byMykelRu": {
@@ -43,14 +43,14 @@
       "url": "https://raw.githubusercontent.com/ByMykel/CSGO-API/main/public/api/zh-CN/all.json",
       "repository": "https://github.com/ByMykel/CSGO-API",
       "license": "MIT",
-      "etag": "W/\"014bb7b2f3bf5a047651b9a55c01b2b189895f5f3fdcb4aa1a22ead15aaf09e3\"",
+      "etag": "W/\"e4790143c2333cfcd9e15d33a5fa8182fa780b45b7cf355bbfd12acb98a12f75\"",
       "lastModified": null
     },
     "marketplaceIds": {
       "url": "https://raw.githubusercontent.com/ModestSerhat/cs2-marketplace-ids/main/cs2_marketplaceids.json",
       "repository": "https://github.com/ModestSerhat/cs2-marketplace-ids",
       "license": "No license file declared upstream",
-      "etag": "W/\"f601c0a57202d1db35cb1b5b6ab57478f65dea06ed16d7e6cfe5164cf1114217\"",
+      "etag": "W/\"abb21217d02d20e9cb486289530a4814d6c8530098d7b5c6ba016ba7d055ed66\"",
       "lastModified": null
     },
     "ericZhuBuff": {
