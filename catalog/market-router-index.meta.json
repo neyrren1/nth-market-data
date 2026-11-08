@@ -1,9 +1,9 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-01T11:18:14.098Z",
+  "generatedAt": "2026-11-08T11:19:01.190Z",
   "catalog": {
     "file": "market-router-index.json",
-    "sha256": "7d0995f1c4a6eb5018abac69cce73a7289238218ae6d60303d9a8d45db83f855",
+    "sha256": "9d4040bfd0b98b0d189e37f2f5e60c46282f26d58a68523d0536a6abf1623372",
     "bytes": 22271846,
     "totalItems": 46245,
     "coverage": {
@@ -50,7 +50,7 @@
       "url": "https://raw.githubusercontent.com/ModestSerhat/cs2-marketplace-ids/main/cs2_marketplaceids.json",
       "repository": "https://github.com/ModestSerhat/cs2-marketplace-ids",
       "license": "No license file declared upstream",
-      "etag": "W/\"1df318937888fedb88abeb15da699183f1c1074dea81fd532f83fd99e10596ac\"",
+      "etag": "W/\"87dfb15fc5f9e0b2f42f784af8674383f780ef12e88ef4675f932ee0804adb85\"",
       "lastModified": null
     },
     "ericZhuBuff": {
